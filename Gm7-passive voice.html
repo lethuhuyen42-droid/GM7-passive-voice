@@ -1,0 +1,536 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Verb Form Quest</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+  /* Layout: one centred column, chunky "sticker" cards on a pale sky ground; one screen visible at a time (start, quiz, result). */
+  :root {
+    --bg: #E4F4FF;
+    --card: #FFFFFF;
+    --ink: #16284A;
+    --muted: #4F6184;
+    --line: #C9E1F4;
+    --blue: #1F6FD1;
+    --blue-d: #174F97;
+    --sun: #FFC933;
+    --sun-d: #E0A400;
+    --sun-soft: #FFF2C4;
+    --mint: #1FB58A;
+    --mint-d: #0B7556;
+    --mint-soft: #D8F6EA;
+    --coral: #F0524F;
+    --coral-d: #B72B28;
+    --coral-soft: #FFE2E1;
+    --font-display: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+    --font-body: "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(circle at 92% -4%, #FFE9A0 0, #FFE9A0 90px, rgba(255,233,160,0) 91px),
+      radial-gradient(circle at 4% 100%, #CBEBFF 0, #CBEBFF 120px, rgba(203,235,255,0) 121px);
+    background-repeat: no-repeat;
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.5;
+  }
+  .app {
+    max-width: 700px;
+    margin: 0 auto;
+    padding-block: 18px 48px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  h1, h2, h3 { font-family: var(--font-display); line-height: 1.15; margin: 0; text-wrap: balance; }
+  p { margin: 0; }
+  button { font-family: inherit; cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+  /* Header */
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; min-height: 44px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 800; font-size: 22px; }
+  .brand svg { flex: none; }
+  .who { display: flex; align-items: center; gap: 8px; background: var(--card); border: 2px solid var(--line); border-radius: 999px; padding: 4px 14px 4px 4px; font-weight: 800; max-width: 55%; }
+  .who .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+  .avatar { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--sun); color: var(--ink); display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; font-size: 18px; }
+
+  /* Cards */
+  .card { background: var(--card); border: 2px solid var(--line); border-radius: 22px; box-shadow: 0 6px 0 var(--line); padding: 22px; }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+
+  /* Start screen */
+  .hero h1 { font-size: clamp(34px, 8vw, 48px); font-weight: 800; }
+  .hero h1 .hl { background: linear-gradient(transparent 58%, var(--sun) 58%, var(--sun) 92%, transparent 92%); padding: 0 4px; }
+  .hero .lead { margin-top: 10px; color: var(--muted); font-weight: 600; max-width: 46ch; }
+  .namebox { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .namebox label { font-weight: 800; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row input { flex: 1 1 200px; min-width: 0; font: inherit; font-weight: 700; padding: 13px 16px; border-radius: 14px; border: 2px solid var(--line); background: #FAFDFF; color: var(--ink); }
+  .row input:focus-visible { border-color: var(--blue); outline-offset: 2px; }
+  .err { color: var(--coral-d); font-weight: 700; min-height: 1.4em; }
+  .btn { font-family: var(--font-display); font-weight: 700; font-size: 19px; border: 0; border-radius: 14px; padding: 12px 24px; background: var(--blue); color: #fff; box-shadow: 0 5px 0 var(--blue-d); transition: transform .08s ease, box-shadow .08s ease; }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 0 var(--blue-d); }
+  .btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--blue-d); }
+  .btn.alt { background: var(--card); color: var(--ink); border: 2px solid var(--line); box-shadow: 0 5px 0 var(--line); padding: 10px 22px; }
+  .btn.alt:active { box-shadow: 0 1px 0 var(--line); }
+
+  .remind h2 { font-size: 22px; }
+  .remind .sub { color: var(--muted); font-weight: 600; margin-top: 2px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 14px; }
+  .tile { background: var(--sun-soft); border-radius: 16px; padding: 14px; min-width: 0; }
+  .tile .tag { font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .tile .form { font-family: var(--font-display); font-weight: 700; font-size: 19px; margin-top: 2px; }
+  .tile .ex { margin-top: 6px; font-size: 15px; font-weight: 600; }
+
+  /* Quiz */
+  .meta { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-weight: 800; }
+  .meta .count { font-family: var(--font-display); font-size: 20px; }
+  .meta .tally { color: var(--mint-d); }
+  .dots { display: flex; gap: 5px; margin-top: 8px; }
+  .dot { flex: 1; height: 10px; border-radius: 99px; background: var(--line); transition: background .2s ease; }
+  .dot.cur { background: var(--sun); }
+  .dot.ok { background: var(--mint); }
+  .dot.no { background: var(--coral); }
+
+  .sentence { font-size: clamp(20px, 4.6vw, 25px); font-weight: 700; line-height: 1.7; }
+  .hint { display: inline-block; background: var(--sun); color: var(--ink); border-radius: 10px; padding: 0 10px; font-weight: 800; font-size: .86em; line-height: 1.5; vertical-align: .05em; margin-inline: 2px; }
+  .blank { display: inline-block; min-width: 5.2ch; border-bottom: 4px solid var(--blue); margin-inline: 4px; padding: 0 8px; text-align: center; line-height: 1.25; }
+  .blank.ok { border-color: var(--mint); color: var(--mint-d); background: var(--mint-soft); border-radius: 8px 8px 0 0; }
+  .blank.no { border-color: var(--coral); color: var(--coral-d); background: var(--coral-soft); border-radius: 8px 8px 0 0; text-decoration: line-through; }
+
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 22px; }
+  .opt { display: flex; align-items: center; gap: 12px; text-align: left; font-weight: 800; font-size: 18px; color: var(--ink); background: #fff; border: 2px solid var(--line); border-radius: 16px; padding: 13px 14px; box-shadow: 0 4px 0 var(--line); min-width: 0; transition: transform .08s ease, border-color .15s ease; }
+  .opt:hover:not(:disabled) { border-color: var(--blue); transform: translateY(-1px); }
+  .opt:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+  .opt:disabled { cursor: default; }
+  .opt .ltr { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--bg); display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; }
+  .opt .txt { min-width: 0; overflow-wrap: anywhere; }
+  .opt.ok { background: var(--mint-soft); border-color: var(--mint); color: var(--mint-d); box-shadow: 0 4px 0 var(--mint); }
+  .opt.ok .ltr { background: var(--mint); color: #fff; }
+  .opt.no { background: var(--coral-soft); border-color: var(--coral); color: var(--coral-d); box-shadow: 0 4px 0 var(--coral); }
+  .opt.no .ltr { background: var(--coral); color: #fff; }
+  .opt.dim { opacity: .55; }
+
+  .after { margin-top: 20px; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+  .fb { font-weight: 800; flex: 1 1 200px; min-width: 0; }
+  .fb.ok { color: var(--mint-d); }
+  .fb.no { color: var(--coral-d); }
+
+  /* Result */
+  .score { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .ring { flex: none; width: 160px; height: 160px; border-radius: 50%; border: 12px solid var(--sun); background: var(--sun-soft); display: grid; place-items: center; text-align: center; animation: pop .5s cubic-bezier(.3,1.5,.5,1) both; }
+  .ring .num { font-family: var(--font-display); font-weight: 800; font-size: 56px; line-height: 1; }
+  .ring .den { font-family: var(--font-display); font-weight: 700; font-size: 22px; color: var(--muted); }
+  @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .score .copy { flex: 1 1 240px; min-width: 0; }
+  .score h2 { font-size: clamp(26px, 6vw, 34px); font-weight: 800; }
+  .score .stat { margin-top: 6px; color: var(--muted); font-weight: 700; }
+  .score .acts { margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .revhead { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .revhead h2 { font-size: 24px; }
+  .rev { display: flex; flex-direction: column; gap: 12px; }
+  .rev .chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chip { display: inline-block; border-radius: 999px; padding: 2px 12px; font-weight: 800; font-size: 14px; }
+  .chip.q { background: var(--ink); color: #fff; }
+  .chip.rule { background: var(--sun-soft); color: var(--ink); }
+  .rev .sentence { font-size: 20px; }
+  .compare { display: flex; flex-wrap: wrap; gap: 8px 16px; font-weight: 800; font-size: 16px; }
+  .compare .c { display: inline-flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .pill { border-radius: 10px; padding: 1px 10px; }
+  .pill.no { background: var(--coral-soft); color: var(--coral-d); text-decoration: line-through; }
+  .pill.ok { background: var(--mint-soft); color: var(--mint-d); }
+  .why { background: #F3F9FF; border-left: 6px solid var(--blue); border-radius: 6px 14px 14px 6px; padding: 12px 14px; }
+  .why .lab { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; font-weight: 800; color: var(--blue-d); }
+  .why p { margin-top: 2px; font-weight: 600; }
+  .perfect { text-align: center; }
+  .perfect h2 { font-size: 26px; }
+  .perfect p { margin-top: 6px; color: var(--muted); font-weight: 600; }
+
+  @media (max-width: 520px) {
+    body { font-size: 16px; }
+    .opts { grid-template-columns: 1fr; }
+    .card { padding: 18px; }
+    .ring { width: 132px; height: 132px; border-width: 10px; }
+    .ring .num { font-size: 46px; }
+    .who { max-width: 52%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true">
+        <g stroke="#E0A400" stroke-width="3" stroke-linecap="round" fill="none">
+          <path d="M20 3v5M20 32v5M3 20h5M32 20h5M8 8l3.5 3.5M28.5 28.5L32 32M32 8l-3.5 3.5M11.5 28.5L8 32"/>
+        </g>
+        <circle cx="20" cy="20" r="9" fill="#FFC933"/>
+        <circle cx="17" cy="18" r="1.6" fill="#16284A"/>
+        <circle cx="23" cy="18" r="1.6" fill="#16284A"/>
+        <path d="M16.5 22.2c1.8 2.2 5.2 2.2 7 0" stroke="#16284A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span>Verb Form Quest</span>
+    </div>
+    <div class="who" id="who" hidden><span class="avatar" id="avatar">A</span><span class="name" id="whoName"></span></div>
+  </header>
+
+  <main>
+    <!-- START -->
+    <section id="screen-start" class="stack">
+      <div class="card hero">
+        <h1>Ready to <span class="hl">play</span>?</h1>
+        <p class="lead">12 sentences. Choose the correct form of the verb in brackets. You get a score out of 10 and a review of every mistake.</p>
+        <form class="namebox" id="nameForm" novalidate>
+          <label for="nameInput">What is your name?</label>
+          <div class="row">
+            <input id="nameInput" type="text" maxlength="24" autocomplete="given-name" placeholder="Type your name here">
+            <button class="btn" type="submit">Start the quiz</button>
+          </div>
+          <p class="err" id="nameErr" role="alert"></p>
+        </form>
+      </div>
+
+      <div class="card remind">
+        <h2>Quick reminder: the passive voice</h2>
+        <p class="sub">The passive is be + past participle (V3/ed). The verb "be" changes with the tense.</p>
+        <div class="tiles">
+          <div class="tile"><div class="tag">Present simple</div><div class="form">am / is / are + V3/ed</div><div class="ex">The room is cleaned every day.</div></div>
+          <div class="tile"><div class="tag">Past simple</div><div class="form">was / were + V3/ed</div><div class="ex">The room was cleaned yesterday.</div></div>
+          <div class="tile"><div class="tag">Present perfect</div><div class="form">has / have been + V3/ed</div><div class="ex">The room has been cleaned.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section id="screen-quiz" class="stack" hidden>
+      <div>
+        <div class="meta"><span class="count" id="count">Question 1 of 12</span><span class="tally" id="tally">0 correct</span></div>
+        <div class="dots" id="dots" aria-hidden="true"></div>
+      </div>
+      <div class="card">
+        <p class="sentence" id="sentence"></p>
+        <div class="opts" id="opts" role="group" aria-label="Answer choices"></div>
+        <div class="after">
+          <p class="fb" id="fb" aria-live="polite"></p>
+          <button class="btn" id="nextBtn" type="button" hidden>Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULT -->
+    <section id="screen-result" class="stack" hidden>
+      <div class="card score">
+        <div class="ring"><div><div class="num" id="scoreNum">0</div><div class="den">/ 10</div></div></div>
+        <div class="copy">
+          <h2 id="resTitle"></h2>
+          <p class="stat" id="resStat"></p>
+          <div class="acts">
+            <button class="btn" id="againBtn" type="button">Play again</button>
+            <button class="btn alt" id="renameBtn" type="button">Change name</button>
+          </div>
+        </div>
+      </div>
+      <div class="revhead"><h2 id="revTitle">Review your mistakes</h2></div>
+      <div class="stack" id="review"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var QUESTIONS = [
+    { pre: "The new timetable", hint: "announce", post: "yesterday so that everyone was well-prepared for all the coming tasks.",
+      answer: "was announced", wrong: ["announced", "has been announced", "is announced"],
+      rule: "Past simple passive: was/were + V3/ed",
+      why: "Có “yesterday” nên dùng thì quá khứ đơn. “The new timetable” (thời khóa biểu) không tự đi thông báo mà là được thông báo, nên dùng câu bị động: was + announced. Công thức: S + was/were + V3/ed." },
+    { pre: "The police", hint: "suppose", post: "to ensure security for the civilian.",
+      answer: "are supposed", wrong: ["is supposed", "are suppose", "suppose"],
+      rule: "be supposed to + V (present simple)",
+      why: "“be supposed to + V” nghĩa là “có nhiệm vụ / được mong đợi phải làm gì”. Câu nói về nhiệm vụ chung nên dùng hiện tại đơn. “The police” là danh từ số nhiều (lực lượng cảnh sát) nên dùng “are”. Vậy đáp án là are supposed." },
+    { pre: "In order to preserve the national heritage, a restoration project", hint: "launch", post: "last year.",
+      answer: "was launched", wrong: ["launched", "is launched", "has launched"],
+      rule: "Past simple passive: was/were + V3/ed",
+      why: "Có “last year” nên dùng quá khứ đơn. Dự án (a restoration project) được khởi động chứ không tự khởi động, nên dùng bị động. “A restoration project” là số ít nên dùng “was”: was launched." },
+    { pre: "We can’t see through the window because it", hint: "not / clean", post: "properly.",
+      answer: "hasn’t been cleaned", wrong: ["hasn’t cleaned", "wasn’t clean", "hasn’t been cleaning"],
+      rule: "Present perfect passive: has/have been + V3/ed",
+      why: "Vế đầu “We can’t see” nói về hiện tại, nguyên nhân là cửa sổ chưa được lau cho đến bây giờ, nên dùng hiện tại hoàn thành bị động phủ định: hasn’t been cleaned. Cái cửa sổ không tự lau được, nên phải là bị động (been + V3/ed)." },
+    { pre: "Fortunately, my handbag", hint: "not / damage", post: "by this cleaning fluid.",
+      answer: "wasn’t damaged", wrong: ["didn’t damage", "hasn’t damaged", "wasn’t damage"],
+      rule: "Past simple passive: was/were + V3/ed",
+      why: "Chiếc túi xách không tự làm hỏng gì cả, nó bị chất tẩy (by this cleaning fluid) làm hỏng hoặc không bị hỏng, nên dùng bị động. “Fortunately” kể lại một việc đã xảy ra nên chia quá khứ đơn: wasn’t damaged. Sau “was” phải là V3/ed (damaged), không dùng “damage”." },
+    { pre: "", hint: "They / thrill", post: "with the gift you sent them last week?",
+      answer: "Were they thrilled", wrong: ["Did they thrilled", "Were they thrilling", "Was they thrilled"],
+      rule: "Past question: Were + S + V3/ed",
+      why: "Món quà được gửi “last week” nên cảm xúc “phấn khích” ở quá khứ: dùng “were”, đảo lên trước chủ ngữ “they” vì đây là câu hỏi. “Thrilled” (V-ed) diễn tả cảm xúc của người, còn “thrilling” diễn tả vật hoặc việc gây ra cảm xúc đó. “They” đi với “were”, không đi với “was”." },
+    { pre: "Do you know when the temple", hint: "construct", post: "?",
+      answer: "was constructed", wrong: ["constructed", "is constructed", "has constructed"],
+      rule: "Past simple passive: was/were + V3/ed",
+      why: "“When the temple ___” là mệnh đề hỏi gián tiếp về việc xây ngôi đền trong quá khứ. Ngôi đền được xây (bị động), nên dùng was + constructed. Đây là một mệnh đề trong câu hỏi gián tiếp nên giữ trật tự “chủ ngữ + động từ”, không đảo." },
+    { pre: "As a routine, a healthy breakfast", hint: "prepare", post: "by Mr. White before his family wake up.",
+      answer: "is prepared", wrong: ["prepares", "is preparing", "was prepared"],
+      rule: "Present simple passive: am/is/are + V3/ed",
+      why: "“As a routine” (thói quen hằng ngày) và “before his family wake up” (hiện tại đơn) cho thấy dùng hiện tại đơn. Bữa sáng được ông White chuẩn bị (có “by Mr. White”) nên dùng bị động: is + prepared. Bữa sáng là số ít nên dùng “is”." },
+    { pre: "This type of fish", hint: "not / usually / catch", post: "by fishermen for commercial purpose.",
+      answer: "isn’t usually caught", wrong: ["doesn’t usually catch", "isn’t usually catching", "wasn’t usually caught"],
+      rule: "Present simple passive (negative): am/is/are not + V3/ed",
+      why: "“Usually” cho biết đây là điều thường xảy ra, nên dùng hiện tại đơn. Loài cá bị ngư dân đánh bắt (by fishermen), nên dùng bị động: is not + caught. Trạng từ tần suất “usually” đứng giữa “isn’t” và V3. Lưu ý: V3 của catch là caught." },
+    { pre: "The sailing ship", hint: "break", post: "apart due to the recent storm.",
+      answer: "broke", wrong: ["was broken", "has been broken", "is broken"],
+      rule: "Past simple active: V2",
+      why: "“Break apart” (vỡ ra, tan rã) ở đây là nội động từ: con tàu tự vỡ ra do cơn bão gần đây (due to the recent storm). Không có người hay vật nào “tác động lên” con tàu được nêu bằng “by”, nên dùng chủ động, quá khứ đơn: broke (V2). “Broken” là V3, dùng trong câu bị động." },
+    { pre: "A meeting", hint: "schedule", post: "for last Friday but it was cancelled because the manager was absent.",
+      answer: "was scheduled", wrong: ["scheduled", "is scheduled", "has been scheduled"],
+      rule: "Past simple passive: was/were + V3/ed",
+      why: "Cuộc họp được lên lịch cho thứ Sáu tuần trước (last Friday), và vế sau cũng ở quá khứ (was cancelled). Cuộc họp không tự lên lịch mà được lên lịch, nên dùng bị động quá khứ đơn: was scheduled." },
+    { pre: "Lectures on cross-culture communication", hint: "often / deliver", post: "by Prof. Edwards.",
+      answer: "are often delivered", wrong: ["is often delivered", "often deliver", "are often delivering"],
+      rule: "Present simple passive: am/is/are + V3/ed",
+      why: "“Often” cho biết việc xảy ra thường xuyên, nên dùng hiện tại đơn. Các bài giảng được giáo sư trình bày (by Prof. Edwards), nên dùng bị động. “Lectures” là số nhiều nên dùng “are”. Trạng từ “often” đứng giữa “are” và V3: are often delivered." }
+  ];
+
+  var KEY = "verb-form-quest-name";
+  var LETTERS = ["A", "B", "C", "D"];
+  var total = QUESTIONS.length;
+
+  var state = { name: "", idx: 0, locked: false, picks: [], opts: [] };
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+  function loadName() { try { return localStorage.getItem(KEY) || ""; } catch (e) { return ""; } }
+  function saveName(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
+  function shuffle(a) {
+    a = a.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function show(which) {
+    ["start", "quiz", "result"].forEach(function (s) { $("screen-" + s).hidden = (s !== which); });
+    $("who").hidden = !state.name || which === "start";
+    window.scrollTo(0, 0);
+  }
+  function fmtScore(correct) {
+    var s = Math.round(correct * 10 / total * 10) / 10;
+    return String(s);
+  }
+  function correctCount() {
+    var c = 0;
+    for (var i = 0; i < total; i++) if (state.picks[i] === QUESTIONS[i].answer) c++;
+    return c;
+  }
+
+  /* Sentence with blank */
+  function buildSentence(q, filled, kind) {
+    var p = el("p", "sentence");
+    if (q.pre) p.appendChild(document.createTextNode(q.pre + " "));
+    p.appendChild(el("span", "hint", "(" + q.hint + ")"));
+    var b = el("span", "blank" + (kind ? " " + kind : ""), filled || " ");
+    p.appendChild(b);
+    if (q.post) {
+      var glue = /^[?.,!]/.test(q.post) ? "" : " ";
+      p.appendChild(document.createTextNode(glue + q.post));
+    }
+    return { node: p, blank: b };
+  }
+  function paintSentence(target, q, filled, kind) {
+    var built = buildSentence(q, filled, kind);
+    target.innerHTML = "";
+    while (built.node.firstChild) target.appendChild(built.node.firstChild);
+  }
+
+  /* Start */
+  function setupStart() {
+    state.name = "";
+    $("nameInput").value = loadName();
+    $("nameErr").textContent = "";
+    show("start");
+  }
+  function beginGame() {
+    state.idx = 0;
+    state.locked = false;
+    state.picks = [];
+    state.opts = QUESTIONS.map(function (q) { return shuffle([q.answer].concat(q.wrong)); });
+    $("who").hidden = false;
+    renderQuestion();
+    show("quiz");
+  }
+
+  /* Quiz */
+  function renderDots() {
+    var d = $("dots");
+    d.innerHTML = "";
+    for (var i = 0; i < total; i++) {
+      var cls = "dot";
+      if (i < state.picks.length) cls += state.picks[i] === QUESTIONS[i].answer ? " ok" : " no";
+      else if (i === state.idx) cls += " cur";
+      d.appendChild(el("span", cls));
+    }
+  }
+  function renderQuestion() {
+    var q = QUESTIONS[state.idx];
+    state.locked = false;
+    $("count").textContent = "Question " + (state.idx + 1) + " of " + total;
+    var c = 0;
+    for (var k = 0; k < state.picks.length; k++) if (state.picks[k] === QUESTIONS[k].answer) c++;
+    $("tally").textContent = c + " correct";
+    renderDots();
+    paintSentence($("sentence"), q, "", "");
+    var box = $("opts");
+    box.innerHTML = "";
+    state.opts[state.idx].forEach(function (text, i) {
+      var b = el("button", "opt");
+      b.type = "button";
+      b.setAttribute("data-i", String(i));
+      b.appendChild(el("span", "ltr", LETTERS[i]));
+      b.appendChild(el("span", "txt", text));
+      b.addEventListener("click", function () { choose(i); });
+      box.appendChild(b);
+    });
+    var fb = $("fb");
+    fb.textContent = "";
+    fb.className = "fb";
+    $("nextBtn").hidden = true;
+  }
+  function choose(i) {
+    if (state.locked) return;
+    state.locked = true;
+    var q = QUESTIONS[state.idx];
+    var picked = state.opts[state.idx][i];
+    var good = picked === q.answer;
+    state.picks[state.idx] = picked;
+    var btns = $("opts").querySelectorAll(".opt");
+    Array.prototype.forEach.call(btns, function (b, bi) {
+      var t = state.opts[state.idx][bi];
+      b.disabled = true;
+      if (t === q.answer) b.classList.add("ok");
+      else if (bi === i) b.classList.add("no");
+      else b.classList.add("dim");
+    });
+    paintSentence($("sentence"), q, picked, good ? "ok" : "no");
+    var fb = $("fb");
+    fb.className = "fb " + (good ? "ok" : "no");
+    fb.textContent = good
+      ? "Correct! Great job, " + state.name + "."
+      : "Not quite, " + state.name + ". The answer is “" + q.answer + "”.";
+    var c = 0;
+    for (var k = 0; k < state.picks.length; k++) if (state.picks[k] === QUESTIONS[k].answer) c++;
+    $("tally").textContent = c + " correct";
+    renderDots();
+    var nb = $("nextBtn");
+    nb.textContent = state.idx === total - 1 ? "See my result" : "Next";
+    nb.hidden = false;
+    nb.focus();
+  }
+  function next() {
+    if (state.idx >= total - 1) { showResult(); return; }
+    state.idx++;
+    renderQuestion();
+  }
+
+  /* Result */
+  function showResult() {
+    var c = correctCount();
+    var wrong = total - c;
+    var s = c * 10 / total;
+    $("scoreNum").textContent = fmtScore(c);
+    var title;
+    if (s >= 9) title = "Outstanding, " + state.name + "!";
+    else if (s >= 7) title = "Great job, " + state.name + "!";
+    else if (s >= 5) title = "Good effort, " + state.name + "!";
+    else title = "Keep going, " + state.name + "!";
+    $("resTitle").textContent = title;
+    $("resStat").textContent = c + " of " + total + " correct" + (wrong ? ", " + wrong + " to review below." : ". Not a single mistake!");
+
+    var rv = $("review");
+    rv.innerHTML = "";
+    if (!wrong) {
+      $("revTitle").textContent = "Review";
+      var perfect = el("div", "card perfect");
+      perfect.appendChild(el("h2", "", "Perfect round!"));
+      perfect.appendChild(el("p", "", "You chose the right form every time. There is nothing to review."));
+      rv.appendChild(perfect);
+    } else {
+      $("revTitle").textContent = "Review your mistakes (" + wrong + ")";
+      QUESTIONS.forEach(function (q, i) {
+        if (state.picks[i] === q.answer) return;
+        var card = el("article", "card rev");
+        var chips = el("div", "chips");
+        chips.appendChild(el("span", "chip q", "Question " + (i + 1)));
+        chips.appendChild(el("span", "chip rule", q.rule));
+        card.appendChild(chips);
+        var holder = el("div");
+        paintSentence(holder, q, q.answer, "ok");
+        var sent = buildSentence(q, q.answer, "ok").node;
+        sent.className = "sentence";
+        card.appendChild(sent);
+        var cmp = el("div", "compare");
+        var a = el("span", "c"); a.appendChild(el("span", "", "You chose:")); a.appendChild(el("span", "pill no", state.picks[i]));
+        var b = el("span", "c"); b.appendChild(el("span", "", "Correct:")); b.appendChild(el("span", "pill ok", q.answer));
+        cmp.appendChild(a); cmp.appendChild(b);
+        card.appendChild(cmp);
+        var why = el("div", "why");
+        why.appendChild(el("div", "lab", "Explanation"));
+        why.appendChild(el("p", "", q.why));
+        card.appendChild(why);
+        rv.appendChild(card);
+      });
+    }
+    show("result");
+  }
+
+  /* Events */
+  $("nameForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var v = $("nameInput").value.replace(/\s+/g, " ").trim();
+    if (!v) {
+      $("nameErr").textContent = "Please type your name to start.";
+      $("nameInput").focus();
+      return;
+    }
+    state.name = v;
+    saveName(v);
+    $("avatar").textContent = v.charAt(0).toUpperCase();
+    $("whoName").textContent = v;
+    beginGame();
+  });
+  $("nameInput").addEventListener("input", function () { $("nameErr").textContent = ""; });
+  $("nextBtn").addEventListener("click", next);
+  $("againBtn").addEventListener("click", beginGame);
+  $("renameBtn").addEventListener("click", function () {
+    var keep = state.name;
+    setupStart();
+    $("nameInput").value = keep;
+    $("nameInput").focus();
+    $("nameInput").select();
+  });
+  document.addEventListener("keydown", function (e) {
+    if ($("screen-quiz").hidden || state.locked) return;
+    var n = parseInt(e.key, 10);
+    if (n >= 1 && n <= 4) choose(n - 1);
+  });
+
+  setupStart();
+})();
+</script>
+
+</body></html>
